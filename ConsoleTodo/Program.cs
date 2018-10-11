@@ -4,9 +4,10 @@ using System.IO;
 
 namespace ConsoleTodo
 {
+    public enum Action { Add, Do, Print, Quit, Delete }
+
     class Program
     {
-        public enum Action { Add, Do, Print, Quit, Delete }
 
         static void Main(string[] args)
         {

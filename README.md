@@ -22,7 +22,7 @@ Deletes the saved todo-list and creates a new one.
 
 + Quit
 
-Saves the todo-list and quits the program.
+Saves the todo-list as a binary file called "savedata" in the same folder as the program and quits the program.
 
 # Testing
 

@@ -1,22 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-public enum Action { Add, Do, Print, Quit }
+using System.Xml.Serialization;
 
 namespace ConsoleTodo
 {
     class Program
     {
+        public enum Action { Add, Do, Print, Quit }
 
         static void Main(string[] args)
         {
 
             Console.WriteLine("Welcome to the console TODO application!");
 
-            Todo todo = loadOrCreateTodo();
+            Todo todo = LoadOrCreateTodo();
 
             Console.WriteLine("Available options: Add, Do, Print, Quit");
 
@@ -25,7 +26,7 @@ namespace ConsoleTodo
                 string input = Console.ReadLine();
                 string[] parameters = input.Split(' ');
 
-                if (!Enum.TryParse(parameters[0], out Action action))
+                if (!Enum.TryParse(parameters[0], true, out Action action))
                 {
                     Console.WriteLine("Not a valid input: " + parameters[0]);
                     Console.WriteLine("Valid inputs are Add, Do, Print, Quit");
@@ -38,19 +39,19 @@ namespace ConsoleTodo
                         try
                         {
                             string[] task = input.Split('"');
-                            todo.addTodo(task[1]);
+                            todo.AddTodo(task[1]);
                         }
                         catch (IndexOutOfRangeException)
                         {
                             Console.WriteLine("Missing argument on action: add");
-                            Console.WriteLine("Expecting example: Add 'Thing to do'");
+                            Console.WriteLine("Expecting example: Add \"Thing to do\"");
                         }
                         break;
 
                     case Action.Do:
                         try
                         {
-                            todo.removeTodo(parameters[1]);
+                            todo.RemoveTodo(parameters[1]);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -60,12 +61,12 @@ namespace ConsoleTodo
                         break;
 
                     case Action.Print:
-                        todo.printTodo();
+                        todo.PrintTodo();
                         break;
 
                     case Action.Quit:
                         Console.WriteLine("Quitting");
-                        saveTodoFile(todo);
+                        SaveTodoFile(todo);
                         break;
 
                     default:
@@ -80,12 +81,13 @@ namespace ConsoleTodo
             }
         }
 
-        private static Todo loadOrCreateTodo()
+        private static Todo LoadOrCreateTodo()
         {
             Todo todo;
-            if (checkForTodoFile())
+            if (CheckForTodoFile())
             {
-                todo = loadTodoFile();
+                todo = LoadTodoFile();
+                Console.WriteLine("Welcome back " + todo.Author);
             }
             else
             {
@@ -98,7 +100,8 @@ namespace ConsoleTodo
                         Console.WriteLine("Nothing detected. Please insert something");
                         continue;
                     }
-                    todo = new Todo(name);
+                    todo = new Todo();
+                    todo.Initialize(name);
                     break;
                 }
             }
@@ -106,48 +109,75 @@ namespace ConsoleTodo
             return todo;
         }
 
-        private static void saveTodoFile(object todo)
+        private static void SaveTodoFile(Todo todo)
         {
-            throw new NotImplementedException();
+            WriteToBinaryFile<Todo>("savedata", todo);
         }
 
-        private static Todo loadTodoFile()
+        private static Todo LoadTodoFile()
         {
-            throw new NotImplementedException();
+            return ReadFromBinaryFile<Todo>("savedata");
         }
 
-        private static bool checkForTodoFile()
+        private static bool CheckForTodoFile()
         {
-            return false;
+            return File.Exists("savedata");
+        }
+
+        public static void WriteToBinaryFile<T>(string filePath, T objectToWrite)
+        {
+            using (Stream stream = File.Open(filePath, FileMode.Create))
+            {
+                var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                binaryFormatter.Serialize(stream, objectToWrite);
+            }
+        }
+
+        public static T ReadFromBinaryFile<T>(string filePath)
+        {
+            using (Stream stream = File.Open(filePath, FileMode.Open))
+            {
+                var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                return (T)binaryFormatter.Deserialize(stream);
+            }
         }
     }
 
+    [Serializable]
     class Todo
     {
-        string author;
+        public string Author { get; private set; }
         int counter;
         Dictionary<string, string> todoList;
 
-        public Todo(string author)
+        public void Initialize(string author)
         {
-            this.author = author;
+            this.Author = author;
             this.counter = 1;
             this.todoList = new Dictionary<string, string>();
         }
 
-        public void addTodo(string task)
+        public void AddTodo(string task)
         {
             string id = "#" + this.counter.ToString();
             this.counter++;
             this.todoList.Add(id, task);
+            Console.WriteLine("Added new task: " + id + " " + task);
         }
 
-        public void removeTodo(string id)
+        public void RemoveTodo(string id)
         {
-            this.todoList.Remove(id);
+            if (todoList.ContainsKey(id))
+            {
+                this.todoList.Remove(id);
+                Console.WriteLine("Task " + id + " removed!");
+            } else
+            {
+                Console.WriteLine("Found no task with id " + id);
+            }
         }
 
-        public void printTodo()
+        public void PrintTodo()
         {
             foreach (KeyValuePair<string, string> task in this.todoList)
             {

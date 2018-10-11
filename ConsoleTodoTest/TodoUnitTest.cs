@@ -55,7 +55,7 @@ namespace ConsoleTodoTest
             Todo todo = new Todo();
             todo.Initialize("Erlend");
             todo.AddTodo("Something");
-            string expected = "Task #1 removed!";
+            string expected = "Task #1 done!";
 
             var currentConsoleOut = Console.Out;
             using (var output = new ConsoleOutput())

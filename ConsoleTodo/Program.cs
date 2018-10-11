@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Serialization;
 
 namespace ConsoleTodo
 {
     class Program
     {
-        public enum Action { Add, Do, Print, Quit }
+        public enum Action { Add, Do, Print, Quit, Delete }
 
         static void Main(string[] args)
         {
@@ -18,8 +14,6 @@ namespace ConsoleTodo
             Console.WriteLine("Welcome to the console TODO application!");
 
             Todo todo = LoadOrCreateTodo();
-
-            Console.WriteLine("Available options: Add, Do, Print, Quit");
 
             while (true)
             {
@@ -29,7 +23,7 @@ namespace ConsoleTodo
                 if (!Enum.TryParse(parameters[0], true, out Action action))
                 {
                     Console.WriteLine("Not a valid input: " + parameters[0]);
-                    Console.WriteLine("Valid inputs are Add, Do, Print, Quit");
+                    Console.WriteLine("Valid inputs are Add, Do, Print, Quit, Delete");
                     continue;
                 }
 
@@ -69,6 +63,11 @@ namespace ConsoleTodo
                         SaveTodoFile(todo);
                         break;
 
+                    case Action.Delete:
+                        Console.WriteLine("Deleting saved todo and creating a new one.");
+                        todo = ResetTodo();
+                        break;
+
                     default:
                         Console.WriteLine("Action not implemented");
                         break;
@@ -81,6 +80,16 @@ namespace ConsoleTodo
             }
         }
 
+        private static Todo ResetTodo()
+        {
+            if (CheckForTodoFile())
+            {
+                File.Delete("savedata");
+            }
+            Todo todo = CreateNewTodo();
+            return todo;
+        }
+
         private static Todo LoadOrCreateTodo()
         {
             Todo todo;
@@ -88,24 +97,33 @@ namespace ConsoleTodo
             {
                 todo = LoadTodoFile();
                 Console.WriteLine("Welcome back " + todo.Author);
+                Console.WriteLine("Available options: Add, Do, Print, Quit, Delete");
             }
             else
             {
-                while (true)
-                {
-                    Console.WriteLine("Please input your name");
-                    string name = Console.ReadLine();
-                    if (name == "")
-                    {
-                        Console.WriteLine("Nothing detected. Please insert something");
-                        continue;
-                    }
-                    todo = new Todo();
-                    todo.Initialize(name);
-                    break;
-                }
+                todo = CreateNewTodo();
             }
 
+            return todo;
+        }
+
+        private static Todo CreateNewTodo()
+        {
+            Todo todo;
+            while (true)
+            {
+                Console.WriteLine("Please input your name");
+                string name = Console.ReadLine();
+                if (name == "")
+                {
+                    Console.WriteLine("Nothing detected. Please insert something");
+                    continue;
+                }
+                todo = new Todo();
+                todo.Initialize(name);
+                break;
+            }
+            Console.WriteLine("Available options: Add, Do, Print, Quit, Delete");
             return todo;
         }
 
@@ -170,7 +188,7 @@ namespace ConsoleTodo
             if (todoList.ContainsKey(intId))
             {
                 this.todoList.Remove(intId);
-                Console.WriteLine("Task " + id + " removed!");
+                Console.WriteLine("Task " + id + " done!");
             } else
             {
                 Console.WriteLine("Found no task with id " + id);

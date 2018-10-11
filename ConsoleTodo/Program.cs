@@ -10,8 +10,10 @@ namespace ConsoleTodo
 {
     class Program
     {
+
         static void Main(string[] args)
         {
+
             Console.WriteLine("Welcome to the console TODO application!");
 
             Todo todo = loadOrCreateTodo();
@@ -35,7 +37,8 @@ namespace ConsoleTodo
                     case Action.Add:
                         try
                         {
-                            addTodo(input);
+                            string[] task = input.Split('"');
+                            todo.addTodo(task[1]);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -47,7 +50,7 @@ namespace ConsoleTodo
                     case Action.Do:
                         try
                         {
-                            doTodo(parameters[1]);
+                            todo.removeTodo(parameters[1]);
                         }
                         catch (IndexOutOfRangeException)
                         {
@@ -57,13 +60,12 @@ namespace ConsoleTodo
                         break;
 
                     case Action.Print:
-                        printTodo();
+                        todo.printTodo();
                         break;
 
                     case Action.Quit:
                         Console.WriteLine("Quitting");
                         saveTodoFile(todo);
-                        quitTodo();
                         break;
 
                     default:
@@ -117,26 +119,6 @@ namespace ConsoleTodo
         private static bool checkForTodoFile()
         {
             return false;
-        }
-
-        private static void quitTodo()
-        {
-            throw new NotImplementedException();
-        }
-
-        private static void printTodo()
-        {
-            throw new NotImplementedException();
-        }
-
-        private static void doTodo(string v)
-        {
-            throw new NotImplementedException();
-        }
-
-        private static void addTodo(string v)
-        {
-            throw new NotImplementedException();
         }
     }
 

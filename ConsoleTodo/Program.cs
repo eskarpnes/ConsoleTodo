@@ -148,28 +148,28 @@ namespace ConsoleTodo
     {
         public string Author { get; private set; }
         int counter;
-        Dictionary<string, string> todoList;
+        SortedDictionary<int, string> todoList;
 
         public void Initialize(string author)
         {
             this.Author = author;
             this.counter = 1;
-            this.todoList = new Dictionary<string, string>();
+            this.todoList = new SortedDictionary<int, string>();
         }
 
         public void AddTodo(string task)
         {
-            string id = "#" + this.counter.ToString();
+            this.todoList.Add(this.counter, task);
+            Console.WriteLine("Added new task: #" + this.counter.ToString() + " " + task);
             this.counter++;
-            this.todoList.Add(id, task);
-            Console.WriteLine("Added new task: " + id + " " + task);
         }
 
         public void RemoveTodo(string id)
         {
-            if (todoList.ContainsKey(id))
+            int intId = int.Parse(id.Substring(1));
+            if (todoList.ContainsKey(intId))
             {
-                this.todoList.Remove(id);
+                this.todoList.Remove(intId);
                 Console.WriteLine("Task " + id + " removed!");
             } else
             {
@@ -179,9 +179,9 @@ namespace ConsoleTodo
 
         public void PrintTodo()
         {
-            foreach (KeyValuePair<string, string> task in this.todoList)
+            foreach (KeyValuePair<int, string> task in this.todoList)
             {
-                Console.WriteLine(task.Key + " " + task.Value);
+                Console.WriteLine("#" + task.Key + " " + task.Value);
             }
         }
     }
